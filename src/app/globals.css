@@ -128,3 +128,27 @@ textarea{resize:vertical;min-height:80px}
 .cpills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .cpill{font-size:12px;font-weight:700;border-radius:14px;padding:3px 10px}
 .cpill.y{background:#E4F0E8;color:var(--green)}.cpill.n{background:#F7E4E1;color:var(--red)}
+
+/* capture bar + recorder + offline queue · 23.09.2026 */
+.mbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mbtn{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:1.5px solid var(--brass);border-radius:12px;padding:12px 6px;font-size:26px;cursor:pointer;font-family:inherit;color:var(--charcoal)}
+.mbtn span{font-size:13px;font-weight:800;color:var(--brass-d)}
+.mbtn:active{background:var(--cream)}
+.qline{margin-top:10px;background:#F6EFD6;color:#8a6a10;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.qthumb{position:relative}
+.qst{position:absolute;bottom:3px;inset-inline-start:3px;font-size:10px;font-weight:800;border-radius:6px;padding:1px 5px;background:rgba(0,0,0,.65);color:#fff}
+.qst.done{background:var(--green)}.qst.error{background:var(--red)}
+.voice .qst{position:static}
+.qrm{position:absolute;top:-6px;inset-inline-start:-6px;width:22px;height:22px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:14px;line-height:22px;cursor:pointer;padding:0}
+.recbox{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:12px}
+.recbtn{width:100%;background:var(--red);color:#fff;border:0;border-radius:10px;padding:14px;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.recrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.recdot{width:14px;height:14px;border-radius:50%;background:var(--red);animation:recp 1s infinite}
+@keyframes recp{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.recdot{animation:none}}
+.rectime{font-size:24px;font-variant-numeric:tabular-nums}
+.recstop{margin-inline-start:auto;background:var(--charcoal);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.recreview{display:grid;gap:10px}
+.recreview audio{width:100%}
+.voice{display:flex;gap:8px;align-items:center;margin-top:8px}
+.pbadge{background:#F6EFD6;color:#8a6a10;border:0;border-radius:9px;padding:6px 10px;font-family:inherit;font-weight:800;font-size:12px;cursor:pointer}

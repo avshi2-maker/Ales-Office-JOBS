@@ -1,42 +1,63 @@
 "use client";
-// VoiceNote.js (src/components/VoiceNote.js) · updated 23.09.2026 07:51 (Asia/Jerusalem)
-// Customer testimonial as a voice note: phone recorder / audio file -> Cloudinary. Text transcript is typed in the quote field (CRM can transcribe later).
-import { useState } from "react";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+// VoiceNote.js (src/components/VoiceNote.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
+// Customer conversation: in-app recorder OR upload an audio file. Saved to the phone queue,
+// uploaded when there's signal. The latest uploaded recording is the job's voice note
+// (url + durationSec → CRM transcribes it with the existing ElevenLabs pipeline).
+import { useEffect, useRef } from "react";
+import Recorder from "./Recorder";
+import { addItem, removeItem, processQueue } from "@/lib/offlineQueue";
+import { useQueueItems } from "@/lib/useQueue";
 
-export default function VoiceNote({ value, onChange }) {
-  const [busy, setBusy] = useState(false);
-  const [prog, setProg] = useState(0);
-  const [err, setErr] = useState("");
-
-  async function pick(list) {
-    const f = list && list[0];
-    if (!f) return;
-    setErr("");
-    setBusy(true);
+function audioDuration(file) {
+  return new Promise((res) => {
     try {
-      const item = await uploadToCloudinary(f, setProg);
-      onChange({ url: item.url, public_id: item.public_id });
-    } catch (e) {
-      setErr(e.message || "העלאה נכשלה");
-    }
-    setBusy(false);
-    setProg(0);
+      const a = document.createElement("audio");
+      a.preload = "metadata";
+      a.onloadedmetadata = () => res(isFinite(a.duration) ? Math.round(a.duration) : null);
+      a.onerror = () => res(null);
+      a.src = URL.createObjectURL(file);
+    } catch (e) { res(null); }
+  });
+}
+
+export default function VoiceNote({ draftKey, onChange }) {
+  const items = useQueueItems(draftKey, "voice");
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    const done = items.filter((i) => i.status === "done" && i.result);
+    onChange(done.length ? done[done.length - 1].result : null);
+  }, [items, onChange]);
+
+  async function saveRec({ blob, name, durationSec }) {
+    await addItem({ draftKey, slot: "voice", blob, name, kind: "audio", durationSec });
   }
+
+  async function pickFile(e) {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    const d = await audioDuration(f);
+    await addItem({ draftKey, slot: "voice", blob: f, name: f.name, kind: "audio", durationSec: d });
+  }
+
+  const waiting = items.filter((i) => i.status !== "done").length;
 
   return (
     <div>
-      <label>🎙️ הקלטת הלקוח (אופציונלי)</label>
-      {value && value.url ? (
-        <div className="voice">
-          <audio src={value.url} controls preload="none" />
-          <button type="button" className="xbtn" onClick={() => onChange(null)}>הסר</button>
+      <label>🎙️ שיחה עם הלקוח המרוצה</label>
+      <Recorder onSave={saveRec} />
+      <button type="button" className="xbtn" style={{ marginTop: 8 }} onClick={() => fileRef.current.click()}>📁 העלה קובץ הקלטה</button>
+      <input ref={fileRef} type="file" accept="audio/*" hidden onChange={pickFile} />
+      {waiting ? <div className="qline">⏳ הקלטה שמורה בטלפון וממתינה להעלאה <button type="button" className="xbtn" onClick={() => processQueue()}>⬆️ שלח עכשיו</button></div> : null}
+      {items.map((i) => (
+        <div key={i.id} className="voice">
+          <audio src={i.preview} controls preload="none" />
+          <span className={"qst " + i.status}>{i.status === "done" ? "✓ הועלה" : i.status === "error" ? "⚠️" : "⏳"}</span>
+          <button type="button" className="xbtn" onClick={() => removeItem(i.id)}>הסר</button>
         </div>
-      ) : (
-        <input type="file" accept="audio/*" capture="user" disabled={busy} onChange={(e) => pick(e.target.files)} />
-      )}
-      {busy ? <div className="upbar"><i style={{ width: prog + "%" }} /></div> : null}
-      {err ? <div className="msg err">{err}</div> : null}
+      ))}
+      {items.length > 1 ? <div className="hint">ההקלטה האחרונה שהועלתה היא זו שתישלח לתמלול.</div> : null}
     </div>
   );
 }

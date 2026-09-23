@@ -1,76 +1,61 @@
-// MediaCapture.js (src/components/MediaCapture.js) · updated 22.09.2026 12:58 (Asia/Jerusalem)
 "use client";
-import { useState } from "react";
-import { uploadToCloudinary, cloudinaryReady } from "@/lib/cloudinary";
+// MediaCapture.js (src/components/MediaCapture.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
+// 3 explicit buttons: 📷 photo (camera) · 🎥 video (camera) · 🖼️ gallery/files.
+// Every file goes to the phone queue first (offlineQueue) and uploads when there's signal.
+// props: draftKey, slot, setMedia(uploadedItems[]) — media is DERIVED from the queue.
+import { useEffect, useRef } from "react";
+import { addItem, removeItem, processQueue } from "@/lib/offlineQueue";
+import { useQueueItems } from "@/lib/useQueue";
+import { cloudinaryReady } from "@/lib/cloudinary";
 
-// props: media (array), setMedia (fn)
-export default function MediaCapture({ media, setMedia }) {
-  const [busy, setBusy] = useState(false);
-  const [prog, setProg] = useState(0);
-  const [err, setErr] = useState("");
+const ST = { pending: "⏳ ממתין", uploading: "⬆️ מעלה", error: "⚠️ נכשל", done: "✓" };
 
-  async function handleFiles(list) {
+export default function MediaCapture({ draftKey, slot = "media", setMedia, title = "תמונות ווידאו" }) {
+  const items = useQueueItems(draftKey, slot);
+  const photoRef = useRef(null);
+  const videoRef = useRef(null);
+  const galRef = useRef(null);
+
+  useEffect(() => {
+    setMedia(items.filter((i) => i.status === "done" && i.result).map((i) => i.result));
+  }, [items, setMedia]);
+
+  async function take(list) {
     const files = Array.from(list || []);
-    if (!files.length) return;
-    setErr("");
-    setBusy(true);
-    const added = [];
-    for (const f of files) {
-      try {
-        setProg(0);
-        const item = await uploadToCloudinary(f, setProg);
-        added.push(item);
-      } catch (e) {
-        setErr(e.message || "העלאה נכשלה");
-      }
-    }
-    if (added.length) setMedia([...(media || []), ...added]);
-    setBusy(false);
-    setProg(0);
+    for (const f of files) await addItem({ draftKey, slot, blob: f, name: f.name });
   }
 
-  function removeAt(i) {
-    setMedia(media.filter((_, idx) => idx !== i));
-  }
+  function onPick(e) { take(e.target.files); e.target.value = ""; }
 
-  const photoLabel = { display: "block" };
+  const waiting = items.filter((i) => i.status !== "done").length;
+
   return (
     <div>
-      <label>תמונות מהמצלמה</label>
-      <input
-        type="file" accept="image/*" capture="environment" multiple
-        disabled={busy}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
-      <label>וידאו (אופציונלי)</label>
-      <input
-        type="file" accept="video/*" capture="environment"
-        disabled={busy}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
+      <label>{title}</label>
+      <div className="mbar">
+        <button type="button" className="mbtn" onClick={() => photoRef.current.click()}>📷<span>צלם תמונה</span></button>
+        <button type="button" className="mbtn" onClick={() => videoRef.current.click()}>🎥<span>צלם וידאו</span></button>
+        <button type="button" className="mbtn" onClick={() => galRef.current.click()}>🖼️<span>מהגלריה</span></button>
+      </div>
+      <input ref={photoRef} type="file" accept="image/*" capture="environment" hidden onChange={onPick} />
+      <input ref={videoRef} type="file" accept="video/*" capture="environment" hidden onChange={onPick} />
+      <input ref={galRef} type="file" accept="image/*,video/*" multiple hidden onChange={onPick} />
 
-      {!cloudinaryReady ? (
-        <div className="warn" style={{ marginTop: 10 }}>Cloudinary לא מוגדר — הוסף מפתחות ל־.env.local כדי להעלות מדיה.</div>
+      {!cloudinaryReady ? <div className="warn" style={{ marginTop: 10 }}>Cloudinary לא מוגדר — הקבצים יישמרו בטלפון עד שיוגדר.</div> : null}
+
+      {waiting ? (
+        <div className="qline">⏳ {waiting} קבצים שמורים בטלפון וממתינים להעלאה <button type="button" className="xbtn" onClick={() => processQueue()}>⬆️ שלח עכשיו</button></div>
       ) : null}
 
-      {busy ? (
-        <div className="upbar"><i style={{ width: prog + "%" }} /></div>
-      ) : null}
-      {err ? <div className="msg err">{err}</div> : null}
-
-      {media && media.length ? (
+      {items.length ? (
         <div className="thumbs">
-          {media.map((m, i) => (
-            <div key={i} style={{ position: "relative" }}>
-              {m.type === "video" ? (
-                <video className="thumb vid" src={m.url} muted playsInline />
-              ) : (
-                <img className="thumb" src={m.url} alt="" />
-              )}
-              <button
-                type="button" onClick={() => removeAt(i)}
-                style={rmBtn}
-              >×</button>
+          {items.map((i) => (
+            <div key={i.id} className="qthumb">
+              {i.kind === "video"
+                ? <video className="thumb vid" src={i.preview} muted playsInline />
+                : <img className="thumb" src={i.preview} alt="" />}
+              <span className={"qst " + i.status}>{ST[i.status]}</span>
+              <button type="button" className="qrm" onClick={() => removeItem(i.id)} aria-label="הסר">×</button>
             </div>
           ))}
         </div>
@@ -78,9 +63,3 @@ export default function MediaCapture({ media, setMedia }) {
     </div>
   );
 }
-
-const rmBtn = {
-  position: "absolute", top: -6, insetInlineStart: -6, width: 22, height: 22,
-  borderRadius: "50%", border: "none", background: "#B4423A", color: "#fff",
-  fontSize: 14, lineHeight: "22px", cursor: "pointer", padding: 0,
-};

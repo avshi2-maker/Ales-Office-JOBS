@@ -1,8 +1,9 @@
-// Brand.js (src/components/Brand.js) · updated 23.09.2026 07:37 (Asia/Jerusalem)
+// Brand.js (src/components/Brand.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LiveClock from "./LiveClock";
+import PendingBadge from "./PendingBadge";
 
 export default function Brand() {
   const path = usePathname();
@@ -14,6 +15,7 @@ export default function Brand() {
         <span className="diamond" /><b>Marble Art</b>
       </Link>
       <LiveClock />
+      <PendingBadge />
       <nav className="topnav">
         <Link href="/new" className={isNew ? "on" : ""}>➕ עבודה חדשה</Link>
         <Link href="/gallery" className={isGal ? "on" : ""}>🖼️ גלריה</Link>

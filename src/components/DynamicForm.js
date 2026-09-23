@@ -1,8 +1,9 @@
-// DynamicForm.js (src/components/DynamicForm.js) · updated 23.09.2026 07:37 (Asia/Jerusalem)
+// DynamicForm.js (src/components/DynamicForm.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
 "use client";
 import { useState } from "react";
 import MediaCapture from "./MediaCapture";
 import LiveStamp from "./LiveStamp";
+import { itemsFor, clearDraft } from "@/lib/offlineQueue";
 
 // props: type (job type obj), onSaved(row), onSubmit(row) async
 export default function DynamicForm({ type, onSubmit }) {
@@ -13,6 +14,7 @@ export default function DynamicForm({ type, onSubmit }) {
   const [msg, setMsg] = useState(null);
 
   const isTesti = type.id === "testimonial";
+  const draftKey = "new:" + type.id;
 
   function setF(key, v) { setFields((p) => ({ ...p, [key]: v })); }
 
@@ -72,6 +74,12 @@ export default function DynamicForm({ type, onSubmit }) {
       setMsg({ t: "err", m: "מלא לפחות כותרת פרויקט או שם לקוח" });
       return;
     }
+    let waiting = 0;
+    try { waiting = (await itemsFor(draftKey, "media")).filter((i) => i.status !== "done").length; } catch (e) {}
+    if (waiting) {
+      setMsg({ t: "err", m: "⏳ " + waiting + " קבצים עדיין ממתינים להעלאה (שמורים בטלפון). לחץ ⬆️ שלח עכשיו כשיש קליטה, ואז שמור." });
+      return;
+    }
     setSaving(true);
     setMsg(null);
     const row = {
@@ -92,6 +100,7 @@ export default function DynamicForm({ type, onSubmit }) {
       setBase({ title: "", city: "", customer: "", ales_quote: "", notes: "" });
       setFields({});
       setMedia([]);
+      try { await clearDraft(draftKey, "media"); } catch (e) {}
     } catch (e) {
       setMsg({ t: "err", m: e.message || "שמירה נכשלה" });
     }
@@ -127,7 +136,7 @@ export default function DynamicForm({ type, onSubmit }) {
           <textarea value={base.notes} onChange={(e) => setBase({ ...base, notes: e.target.value })} placeholder="כל דבר נוסף ששווה לתעד" /></div>
       ) : null}
 
-      <MediaCapture media={media} setMedia={setMedia} />
+      <MediaCapture draftKey={draftKey} slot="media" setMedia={setMedia} />
 
       <LiveStamp />
 

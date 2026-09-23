@@ -1,5 +1,5 @@
 "use client";
-// FinishChapter.js (src/components/FinishChapter.js) · updated 23.09.2026 07:51 (Asia/Jerusalem)
+// FinishChapter.js (src/components/FinishChapter.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
 // Chapter 2 of every job: after-install photos, finish date, customer rating/quote/voice, 3 consents.
 // Saves via rpc finish_job (server enforces: open jobs only, finish fields only, >=1 after photo).
 import { useState } from "react";
@@ -7,6 +7,7 @@ import MediaCapture from "./MediaCapture";
 import VoiceNote from "./VoiceNote";
 import LiveStamp from "./LiveStamp";
 import { finishJob } from "@/lib/supabase";
+import { itemsFor, clearDraft } from "@/lib/offlineQueue";
 
 function todayIL() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
@@ -29,9 +30,14 @@ export default function FinishChapter({ job, onDone }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
+  const draftKey = "finish:" + job.id;
+
   function tog(k) { setConsent((c) => ({ ...c, [k]: !c[k] })); }
 
   async function save() {
+    let waiting = 0;
+    try { waiting = (await itemsFor(draftKey)).filter((i) => i.status !== "done").length; } catch (e) {}
+    if (waiting) { setMsg({ t: "err", m: "⏳ " + waiting + " קבצים/הקלטות עדיין ממתינים להעלאה (שמורים בטלפון). לחץ ⬆️ שלח עכשיו כשיש קליטה, ואז שמור." }); return; }
     if (!after.length) { setMsg({ t: "err", m: "צלם לפחות תמונה אחת של העבודה המוגמרת" }); return; }
     setSaving(true);
     setMsg(null);
@@ -43,6 +49,7 @@ export default function FinishChapter({ job, onDone }) {
     };
     try {
       const row = await finishJob(job.id, payload);
+      try { await clearDraft(draftKey); } catch (e) {}
       onDone(row);
     } catch (e) {
       setMsg({ t: "err", m: e.message });
@@ -57,7 +64,7 @@ export default function FinishChapter({ job, onDone }) {
       <h2 className="fr">✅ פרק סיום עבודה + המלצת לקוח</h2>
       <p className="hint">ממלאים ביום הסיום, מול הלקוח. אחרי השמירה העבודה נשלחת לאבשי להפקת תיק פרויקט.</p>
 
-      <MediaCapture media={after} setMedia={setAfter} />
+      <MediaCapture draftKey={draftKey} slot="after" setMedia={setAfter} title="תמונות ווידאו אחרי ההתקנה" />
       <div className={"tipline" + (after.length >= 4 ? " ok" : "")}>📸 {after.length} תמונות · {tip}</div>
 
       <div className="grid2">
@@ -75,7 +82,7 @@ export default function FinishChapter({ job, onDone }) {
       <label>ההמלצה במילים של הלקוח</label>
       <textarea value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="מה הלקוח אמר על התוצאה, על ההדמיה, על ההתקנה..." />
 
-      <VoiceNote value={voice} onChange={setVoice} />
+      <VoiceNote draftKey={draftKey} onChange={setVoice} />
 
       <label>הסכמות הלקוח</label>
       <div className="consents">
