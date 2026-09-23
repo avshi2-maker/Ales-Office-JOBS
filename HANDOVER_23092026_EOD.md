@@ -30,6 +30,7 @@ CRM (crm.marble-art.co.il) → tab "תיקי פרויקטים מאלס"
 | 7fb3933 | Phase 1: `/job/[id]` finish chapter + testimonial; rpc `finish_job` (security definer); price removed from share |
 | 46c08de | 📷/🎥/🖼️ capture bar, 🎙️ in-app recorder, save-now-send-later IndexedDB queue, header pending badge |
 | 15b428b | Finish: "📎 use existing photos as after" + clearer message |
+| acffeb5 | New job: mandatory שם הלקוח (red→green), 🎙️ Hebrew dictation on סיפור + הערות, 📐 שרטוטים box (photo-only + visibility warning); sketches on job page |
 
 ### Sinks_ART CRM (crm.marble-art.co.il) — Supabase `givcxgzhfoetujhrjgvc`
 | Commit | What |
@@ -43,6 +44,7 @@ CRM (crm.marble-art.co.il) → tab "תיקי פרויקטים מאלס"
 | bfd4cfe | 📷 הוסף תמונות on case file; 🅱️ Bing in index tracker (send single/bulk, check, status) |
 | 16fddc7 | Nav label "אינדוקס גוגל + בינג" |
 | f5677be | 📧 Email alerts: Vercel Cron */10 → `/api/ales-notify`; daily reminder until opened |
+| 07a3a8f | 🛠️ "בביצוע אצל אלס" section (open Ales jobs, live read-only) + 📐 sketch reader (/api/analyze-photo sketch → work-instruction draft, meter + export); sketches carried into case files |
 
 ### sinks-bathroom-design (marble-art.co.il)
 | 87092ce | `/projects/[slug]` reads published cases (ISR 5 min), JSON-LD graph, projects index, sitemap, city-page block, `/llms-full.txt`, IndexNow key file |
@@ -51,9 +53,9 @@ CRM (crm.marble-art.co.il) → tab "תיקי פרויקטים מאלס"
 | f90a14f | Tab 📂 מאלס: cases live from CRM, texts w/ case link, copy/WhatsApp/history/variations, ✓ posted per network → CRM `social_log` |
 
 ## 3. DATABASE CHANGES (all APPLIED)
-- **Ales** `ales_jobs`: status, finished_at, finish_date, after_media, testimonial, consent + rpc `finish_job`.
-- **CRM**: `index_log` (+ bing_sent_at, bing_indexed_at) · `case_studies` (+ social_log, notified_at, last_reminder_at, opened_at).
-- SQL files in each repo: `supabase_phase1_finish.sql` (Ales) · `supabase/phase42…phase46_*.sql` (CRM).
+- **Ales** `ales_jobs`: status, finished_at, finish_date, after_media, testimonial, consent, sketches + rpc `finish_job`.
+- **CRM**: `index_log` (+ bing_sent_at, bing_indexed_at) · `case_studies` (+ social_log, notified_at, last_reminder_at, opened_at, sketches, sketch_analysis).
+- SQL files in each repo: `supabase_phase1_finish.sql` (Ales) · `supabase_phase2_sketches.sql` (Ales) · `supabase/phase42…phase47_*.sql` (CRM).
 
 ## 4. ENV VARS (Vercel, all set by Avshi)
 - ales-office-jobs: NEXT_PUBLIC_SUPABASE_URL/ANON_KEY, NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME (dqdku88vv), _UPLOAD_PRESET (ales_unsigned), NEXT_PUBLIC_APP_PIN
@@ -68,12 +70,13 @@ CRM (crm.marble-art.co.il) → tab "תיקי פרויקטים מאלס"
 - DEMO-TEST deleted from Ales + CRM (never published). Real case in CRM: **מלון שירותים** (generated, awaiting approval). Plus Avshi's new test job (finished, in CRM).
 
 ## 7. OPEN / NEXT (in order)
-1. **Verify email for the new test job** — first alert (מלון שרותים) arrived ✓. If the new test job's email doesn't arrive within ~20 min: Vercel → sinks-art → Settings → Cron Jobs → check `/api/ales-notify` runs; logs.
-2. **Delete Avshi's test job** (Ales + CRM) once email confirmed — ask Avshi item-by-item.
-3. **מלון שירותים**: 📷 add 2+ photos → ✨ צור מחדש → 10/10 gates → ✅ אשר ופרסם → first real case page live.
+✅ Email alerts verified end-to-end (מלון שרותים + בדיקה both arrived; cron runs every 10 min, CRON_SECRET set).
+1. **Delete test jobs** (ask Avshi item-by-item): `בדיקה` (finished → Ales + CRM case) and `test` (open, Ales only).
+2. **Field-test on phone**: new job → name red→green, 🎙️ dictation (story/notes), 📐 sketch photo → CRM 🛠️ בביצוע → 📐 פענח שרטוט.
+3. **מלון שירותים**: 📷 add 2+ photos → ✨ צור מחדש → 10/10 gates → ✅ אשר ופרסם → first real case page.
 4. **After first publish**: 🔎 tab → Google Request indexing; 🅱️ שלח הכל לבינג (all 28).
-5. Optional (Avshi to decide): A) show open jobs in CRM as "🛠️ בביצוע אצל אלס"; B) clearer save message after new job.
-6. Ferrari backlog: Google-review WhatsApp ask after publish (Phase 5), GBP post draft, per-case leads in /roi (Phase 6).
+5. **Known limits / candidates**: sketches only at job creation (not after); sketch reader = text work-instruction, NOT yet a PO in הזמנות ייצור (PO module is built on CRM-drawn sketch_svg) — bridge = separate build; old cases have no sketches.
+6. Ferrari backlog: sketch→PO bridge; Google-review WhatsApp ask after publish (Phase 5); GBP post draft; per-case leads in /roi (Phase 6).
 
 ## 8. RESUME CHECKLIST
 1. Read this file.
