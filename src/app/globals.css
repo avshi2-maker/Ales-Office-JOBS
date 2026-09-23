@@ -155,3 +155,16 @@ textarea{resize:vertical;min-height:80px}
 
 .usex{margin-top:8px;background:#EEF4FB;border:1px solid #BFD4EA;color:#2F5B8C;border-radius:10px;padding:8px 10px;font-size:13px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .usex.on{background:#E4F0E8;border-color:#A9CDB5;color:var(--green)}
+
+/* required name · mic · sketches · 23.09.2026 */
+input.req{border:2px solid #E0A8A0;background:#FFF7F5}
+input.req.ok{border-color:var(--green);background:#EEF7F1}
+.reqstar{color:var(--red);font-size:11px;font-weight:700}
+.microw{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.micbtn{background:#fff;border:1.5px solid var(--brass);color:var(--brass-d);border-radius:20px;padding:7px 14px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.micbtn.on{background:var(--red);border-color:var(--red);color:#fff;animation:recp 1.2s infinite}
+@media (prefers-reduced-motion:reduce){.micbtn.on{animation:none}}
+.micint{font-size:12px;color:#8a8175;font-style:italic}
+.skbox{margin-top:16px;background:#F4F8FC;border:1.5px dashed #7FA3C8;border-radius:12px;padding:4px 12px 12px}
+.skhint{background:#FFF4D6;border:1px solid #E7C66B;color:#6B5310;border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:700;margin-bottom:8px}
+.mbar.two{grid-template-columns:1fr 1fr}

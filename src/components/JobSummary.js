@@ -18,6 +18,12 @@ export default function JobSummary({ job }) {
           ? <span className="stbadge fin">✅ הסתיים · {stampDate(job.finish_date || job.finished_at)}</span>
           : <span className="stbadge open">🛠️ בביצוע</span>}
       </div>
+      {(job.sketches || []).length ? (
+        <div style={{ marginTop: 10 }}>
+          <div className="meta">📐 שרטוטים ({job.sketches.length})</div>
+          <div className="thumbs">{job.sketches.map((m, i) => <a key={i} href={m.url} target="_blank" rel="noreferrer"><img className="thumb" src={m.url} alt="שרטוט" /></a>)}</div>
+        </div>
+      ) : null}
       {media.length ? (
         <div className="thumbs" style={{ marginTop: 10 }}>
           {media.map((m, i) => (m.type === "video"

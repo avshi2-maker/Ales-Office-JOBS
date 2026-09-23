@@ -1,7 +1,8 @@
-// DynamicForm.js (src/components/DynamicForm.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
+// DynamicForm.js (src/components/DynamicForm.js) · updated 23.09.2026 16:48 (Asia/Jerusalem)
 "use client";
 import { useState } from "react";
 import MediaCapture from "./MediaCapture";
+import MicButton from "./MicButton";
 import LiveStamp from "./LiveStamp";
 import { itemsFor, clearDraft } from "@/lib/offlineQueue";
 
@@ -10,6 +11,7 @@ export default function DynamicForm({ type, onSubmit }) {
   const [base, setBase] = useState({ title: "", city: "", customer: "", ales_quote: "", notes: "" });
   const [fields, setFields] = useState({});
   const [media, setMedia] = useState([]);
+  const [sketches, setSketches] = useState([]);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
 
@@ -47,6 +49,7 @@ export default function DynamicForm({ type, onSubmit }) {
         <div key={f.key}>
           <label>{f.label}</label>
           <textarea value={fields[f.key] || ""} placeholder={f.placeholder || ""} onChange={(e) => setF(f.key, e.target.value)} />
+          {f.key === "story" ? <MicButton value={fields[f.key] || ""} onChange={(v) => setF(f.key, v)} /> : null}
         </div>
       );
     }
@@ -70,12 +73,17 @@ export default function DynamicForm({ type, onSubmit }) {
   }
 
   async function submit() {
+    const custName = isTesti ? base.title.trim() : base.customer.trim();
+    if (!custName) {
+      setMsg({ t: "err", m: "חובה למלא שם הלקוח" });
+      return;
+    }
     if (!base.title.trim() && !base.customer.trim()) {
       setMsg({ t: "err", m: "מלא לפחות כותרת פרויקט או שם לקוח" });
       return;
     }
     let waiting = 0;
-    try { waiting = (await itemsFor(draftKey, "media")).filter((i) => i.status !== "done").length; } catch (e) {}
+    try { waiting = (await itemsFor(draftKey)).filter((i) => i.status !== "done").length; } catch (e) {}
     if (waiting) {
       setMsg({ t: "err", m: "⏳ " + waiting + " קבצים עדיין ממתינים להעלאה (שמורים בטלפון). לחץ ⬆️ שלח עכשיו כשיש קליטה, ואז שמור." });
       return;
@@ -93,6 +101,7 @@ export default function DynamicForm({ type, onSubmit }) {
       permission: isTesti ? !!fields.permission : false,
       fields,
       media,
+      sketches,
     };
     try {
       await onSubmit(row);
@@ -100,7 +109,8 @@ export default function DynamicForm({ type, onSubmit }) {
       setBase({ title: "", city: "", customer: "", ales_quote: "", notes: "" });
       setFields({});
       setMedia([]);
-      try { await clearDraft(draftKey, "media"); } catch (e) {}
+      setSketches([]);
+      try { await clearDraft(draftKey); } catch (e) {}
     } catch (e) {
       setMsg({ t: "err", m: e.message || "שמירה נכשלה" });
     }
@@ -113,16 +123,16 @@ export default function DynamicForm({ type, onSubmit }) {
   return (
     <div>
       <div className="grid2">
-        <div><label>{isTesti ? "שם הלקוח" : "כותרת הפרויקט"}</label>
-          <input value={base.title} onChange={(e) => setBase({ ...base, title: e.target.value })}
+        <div><label>{isTesti ? <>שם הלקוח <span className="reqstar">* חובה</span></> : "כותרת הפרויקט"}</label>
+          <input className={isTesti ? (base.title.trim() ? "req ok" : "req") : ""} value={base.title} onChange={(e) => setBase({ ...base, title: e.target.value })}
             placeholder={isTesti ? "שם פרטי / מלא" : "כיור שיש שחור לווילה בהרצליה"} /></div>
         <div><label>עיר</label>
           <input value={base.city} onChange={(e) => setBase({ ...base, city: e.target.value })} placeholder="הרצליה" /></div>
       </div>
       {!isTesti ? (
         <div className="grid2">
-          <div><label>שם הלקוח</label>
-            <input value={base.customer} onChange={(e) => setBase({ ...base, customer: e.target.value })} placeholder="שם הלקוח" /></div>
+          <div><label>שם הלקוח <span className="reqstar">* חובה</span></label>
+            <input className={base.customer.trim() ? "req ok" : "req"} value={base.customer} onChange={(e) => setBase({ ...base, customer: e.target.value })} placeholder="חובה — שם הלקוח" /></div>
           <div><label>הצעת מחיר / עלות</label>
             <input value={base.ales_quote} onChange={(e) => setBase({ ...base, ales_quote: e.target.value })} placeholder="₪ ..." /></div>
         </div>
@@ -133,10 +143,17 @@ export default function DynamicForm({ type, onSubmit }) {
 
       {!isTesti ? (
         <div><label>הערות</label>
-          <textarea value={base.notes} onChange={(e) => setBase({ ...base, notes: e.target.value })} placeholder="כל דבר נוסף ששווה לתעד" /></div>
+          <textarea value={base.notes} onChange={(e) => setBase({ ...base, notes: e.target.value })} placeholder="כל דבר נוסף ששווה לתעד" />
+          <MicButton value={base.notes} onChange={(v) => setBase((b) => ({ ...b, notes: v }))} /></div>
       ) : null}
 
       <MediaCapture draftKey={draftKey} slot="media" setMedia={setMedia} />
+
+      {!isTesti ? (
+        <div className="skbox">
+          <MediaCapture draftKey={draftKey} slot="sketch" setMedia={setSketches} photoOnly title="📐 שרטוטים" hint="⚠️ ודא שכל נתוני השרטוט — מידות, מטרים, ס״מ — נראים במלואם וברורים בתמונה. צלם ישר מלמעלה, באור טוב." />
+        </div>
+      ) : null}
 
       <LiveStamp />
 

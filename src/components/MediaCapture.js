@@ -1,5 +1,5 @@
 "use client";
-// MediaCapture.js (src/components/MediaCapture.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
+// MediaCapture.js (src/components/MediaCapture.js) · updated 23.09.2026 16:48 (Asia/Jerusalem)
 // 3 explicit buttons: 📷 photo (camera) · 🎥 video (camera) · 🖼️ gallery/files.
 // Every file goes to the phone queue first (offlineQueue) and uploads when there's signal.
 // props: draftKey, slot, setMedia(uploadedItems[]) — media is DERIVED from the queue.
@@ -10,7 +10,7 @@ import { cloudinaryReady } from "@/lib/cloudinary";
 
 const ST = { pending: "⏳ ממתין", uploading: "⬆️ מעלה", error: "⚠️ נכשל", done: "✓" };
 
-export default function MediaCapture({ draftKey, slot = "media", setMedia, title = "תמונות ווידאו" }) {
+export default function MediaCapture({ draftKey, slot = "media", setMedia, title = "תמונות ווידאו", photoOnly = false, hint = "" }) {
   const items = useQueueItems(draftKey, slot);
   const photoRef = useRef(null);
   const videoRef = useRef(null);
@@ -32,14 +32,15 @@ export default function MediaCapture({ draftKey, slot = "media", setMedia, title
   return (
     <div>
       <label>{title}</label>
-      <div className="mbar">
+      {hint ? <div className="skhint">{hint}</div> : null}
+      <div className={"mbar" + (photoOnly ? " two" : "")}>
         <button type="button" className="mbtn" onClick={() => photoRef.current.click()}>📷<span>צלם תמונה</span></button>
-        <button type="button" className="mbtn" onClick={() => videoRef.current.click()}>🎥<span>צלם וידאו</span></button>
+        {!photoOnly ? <button type="button" className="mbtn" onClick={() => videoRef.current.click()}>🎥<span>צלם וידאו</span></button> : null}
         <button type="button" className="mbtn" onClick={() => galRef.current.click()}>🖼️<span>מהגלריה</span></button>
       </div>
       <input ref={photoRef} type="file" accept="image/*" capture="environment" hidden onChange={onPick} />
       <input ref={videoRef} type="file" accept="video/*" capture="environment" hidden onChange={onPick} />
-      <input ref={galRef} type="file" accept="image/*,video/*" multiple hidden onChange={onPick} />
+      <input ref={galRef} type="file" accept={photoOnly ? "image/*" : "image/*,video/*"} multiple hidden onChange={onPick} />
 
       {!cloudinaryReady ? <div className="warn" style={{ marginTop: 10 }}>Cloudinary לא מוגדר — הקבצים יישמרו בטלפון עד שיוגדר.</div> : null}
 
