@@ -1,5 +1,5 @@
 "use client";
-// FinishChapter.js (src/components/FinishChapter.js) · updated 23.09.2026 10:32 (Asia/Jerusalem)
+// FinishChapter.js (src/components/FinishChapter.js) · updated 23.09.2026 14:44 (Asia/Jerusalem)
 // Chapter 2 of every job: after-install photos, finish date, customer rating/quote/voice, 3 consents.
 // Saves via rpc finish_job (server enforces: open jobs only, finish fields only, >=1 after photo).
 import { useState } from "react";
@@ -29,6 +29,8 @@ export default function FinishChapter({ job, onDone }) {
   const [consent, setConsent] = useState({ photos: false, name_city: false, quote: false });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const existing = (job.media || []).filter((m) => m && m.url);
+  const [useExisting, setUseExisting] = useState(false);
 
   const draftKey = "finish:" + job.id;
 
@@ -38,12 +40,18 @@ export default function FinishChapter({ job, onDone }) {
     let waiting = 0;
     try { waiting = (await itemsFor(draftKey)).filter((i) => i.status !== "done").length; } catch (e) {}
     if (waiting) { setMsg({ t: "err", m: "⏳ " + waiting + " קבצים/הקלטות עדיין ממתינים להעלאה (שמורים בטלפון). לחץ ⬆️ שלח עכשיו כשיש קליטה, ואז שמור." }); return; }
-    if (!after.length) { setMsg({ t: "err", m: "צלם לפחות תמונה אחת של העבודה המוגמרת" }); return; }
+    const finalAfter = after.length ? after : (useExisting ? existing : []);
+    if (!finalAfter.length) {
+      setMsg({ t: "err", m: existing.length
+        ? "אין עדיין תמונת 'אחרי'. צלם את העבודה המוגמרת למעלה (📷), או לחץ '📎 השתמש בתמונות שכבר צולמו'."
+        : "צלם לפחות תמונה אחת של העבודה המוגמרת (📷 למעלה בפרק הזה)." });
+      return;
+    }
     setSaving(true);
     setMsg(null);
     const payload = {
       finish_date: date,
-      after_media: after,
+      after_media: finalAfter,
       testimonial: { rating: rating || null, quote: quote.trim(), first_name: firstName.trim(), voice: voice || null },
       consent,
     };
@@ -66,6 +74,12 @@ export default function FinishChapter({ job, onDone }) {
 
       <MediaCapture draftKey={draftKey} slot="after" setMedia={setAfter} title="תמונות ווידאו אחרי ההתקנה" />
       <div className={"tipline" + (after.length >= 4 ? " ok" : "")}>📸 {after.length} תמונות · {tip}</div>
+      {!after.length && existing.length ? (
+        <div className={"usex" + (useExisting ? " on" : "")}>
+          <span>יש {existing.length} תמונות שצולמו כשהעבודה נפתחה.</span>
+          <button type="button" className="xbtn" onClick={() => setUseExisting(!useExisting)}>{useExisting ? "✓ ישמשו כתמונות 'אחרי'" : "📎 השתמש בתמונות שכבר צולמו"}</button>
+        </div>
+      ) : null}
 
       <div className="grid2">
         <div><label>תאריך סיום</label><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
