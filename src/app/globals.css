@@ -103,3 +103,28 @@ textarea{resize:vertical;min-height:80px}
 .lstamp{margin-top:16px;background:var(--cream);border:1px dashed var(--brass);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--espresso)}
 .lstamp b{font-variant-numeric:tabular-nums}
 @media (max-width:480px){.topbar{justify-content:center}.clock{order:3;width:100%}}
+
+/* phase 1 · finish chapter · 23.09.2026 */
+.stamprow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.stamprow .dstamp{margin-bottom:0}
+.stbadge{display:inline-block;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:800}
+.stbadge.open{background:#F6EFD6;color:#8a6a10}
+.stbadge.fin{background:#E4F0E8;color:var(--green)}
+.openjob{display:block;text-align:center;margin-top:10px;border:1px solid var(--brass);color:var(--brass-d);border-radius:10px;padding:10px;font-weight:800;font-size:14px}
+.openjob.go{background:var(--green);border-color:var(--green);color:#fff}
+.chapter{border:2px solid var(--brass)}
+.chapter.done{border-color:var(--green)}
+.tipline{font-size:12.5px;margin-top:8px;color:#8a6a10}
+.tipline.ok{color:var(--green)}
+.consents{display:grid;gap:8px}
+.btn.fin{background:var(--green)}
+.btn.fin:hover{background:#2f6340}
+.voice{display:flex;gap:8px;align-items:center}
+.voice audio{flex:1;min-width:0}
+.savedbanner{background:#E4F0E8;color:var(--green);font-weight:800;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.starline{color:var(--brass);font-size:22px;letter-spacing:3px;margin-top:10px}
+.tq{margin:8px 0 0;background:var(--cream);border-radius:10px;padding:10px 12px;font-size:15px;line-height:1.5}
+.tq span{color:#8a8175;font-size:13px}
+.cpills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cpill{font-size:12px;font-weight:700;border-radius:14px;padding:3px 10px}
+.cpill.y{background:#E4F0E8;color:var(--green)}.cpill.n{background:#F7E4E1;color:var(--red)}
