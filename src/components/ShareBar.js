@@ -1,6 +1,7 @@
-// ShareBar.js (src/components/ShareBar.js) · updated 22.09.2026 13:01 (Asia/Jerusalem)
+// ShareBar.js (src/components/ShareBar.js) · updated 23.09.2026 07:38 (Asia/Jerusalem)
 "use client";
 import { typeLabel } from "@/lib/jobtypes";
+import { stampDate } from "@/lib/datestamp";
 
 // Builds a shareable text block from a job row and shares via WhatsApp / mail /
 // native share / copy. Used to send project assets to potential customers.
@@ -8,7 +9,7 @@ function buildText(job) {
   const L = [];
   L.push("*Marble Art · " + typeLabel(job.job_type) + "*");
   if (job.title) L.push(job.title);
-  const meta = [job.city, job.customer].filter(Boolean).join(" · ");
+  const meta = [job.city, job.customer, job.created_at ? stampDate(job.created_at) : ""].filter(Boolean).join(" · ");
   if (meta) L.push(meta);
   if (job.fields && job.fields.stone) L.push("אבן: " + job.fields.stone);
   if (job.fields && job.fields.size) L.push("מידות: " + job.fields.size);

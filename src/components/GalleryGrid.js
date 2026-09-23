@@ -1,15 +1,12 @@
-// GalleryGrid.js (src/components/GalleryGrid.js) · updated 22.09.2026 13:03 (Asia/Jerusalem)
+// GalleryGrid.js (src/components/GalleryGrid.js) · updated 23.09.2026 07:37 (Asia/Jerusalem)
 "use client";
 import { typeLabel } from "@/lib/jobtypes";
 import ShareBar from "./ShareBar";
+import { stampFull } from "@/lib/datestamp";
 
 function stars5(n) {
   const v = Number(n || 0);
   return "★★★★★".slice(0, v) + "☆☆☆☆☆".slice(0, 5 - v);
-}
-
-function whenHe(iso) {
-  try { return new Date(iso).toLocaleDateString("he-IL"); } catch (e) { return ""; }
 }
 
 export default function GalleryGrid({ jobs }) {
@@ -33,12 +30,13 @@ export default function GalleryGrid({ jobs }) {
               </div>
             ) : null}
             <div className="gbody">
+              {job.created_at ? <div className="dstamp">📅 {stampFull(job.created_at)}</div> : null}
               <h3>
                 {job.title || job.customer || "ללא כותרת"}
                 <span className="tag">{typeLabel(job.job_type)}</span>
               </h3>
               <div className="meta">
-                {[job.city, job.customer, whenHe(job.created_at)].filter(Boolean).join(" · ")}
+                {[job.city, job.customer].filter(Boolean).join(" · ")}
                 {job.job_type === "testimonial" && job.rating ? (
                   <span style={{ color: "var(--brass)", marginInlineStart: 6 }}>{stars5(job.rating)}</span>
                 ) : null}

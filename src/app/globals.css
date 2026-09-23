@@ -94,3 +94,12 @@ textarea{resize:vertical;min-height:80px}
 .pinwrap{max-width:340px;margin:12vh auto;padding:0 16px;text-align:center}
 .pinwrap .diamond{margin:0 auto 14px}
 .warn{background:#fff5e6;border:1px solid #e6c98a;color:#8a6f44;border-radius:10px;padding:12px;font-size:13px;margin-bottom:14px}
+
+/* clock + date stamps · 23.09.2026 */
+.clock{display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:120px}
+.clock-time{font-size:17px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums;color:var(--brass)}
+.clock-date{font-size:11px;color:#cfc6b8}
+.dstamp{display:inline-block;background:var(--charcoal);color:var(--cream);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.lstamp{margin-top:16px;background:var(--cream);border:1px dashed var(--brass);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--espresso)}
+.lstamp b{font-variant-numeric:tabular-nums}
+@media (max-width:480px){.topbar{justify-content:center}.clock{order:3;width:100%}}

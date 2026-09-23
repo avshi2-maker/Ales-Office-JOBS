@@ -1,7 +1,8 @@
-// DynamicForm.js (src/components/DynamicForm.js) · updated 22.09.2026 12:59 (Asia/Jerusalem)
+// DynamicForm.js (src/components/DynamicForm.js) · updated 23.09.2026 07:37 (Asia/Jerusalem)
 "use client";
 import { useState } from "react";
 import MediaCapture from "./MediaCapture";
+import LiveStamp from "./LiveStamp";
 
 // props: type (job type obj), onSaved(row), onSubmit(row) async
 export default function DynamicForm({ type, onSubmit }) {
@@ -128,7 +129,9 @@ export default function DynamicForm({ type, onSubmit }) {
 
       <MediaCapture media={media} setMedia={setMedia} />
 
-      <button className="btn" style={{ marginTop: 18 }} disabled={saving} onClick={submit}>
+      <LiveStamp />
+
+      <button className="btn" style={{ marginTop: 10 }} disabled={saving} onClick={submit}>
         {saving ? "שומר..." : "💾 שמור עבודה"}
       </button>
       {msg ? <div className={"msg " + (msg.t === "ok" ? "ok" : "err")}>{msg.m}</div> : null}
